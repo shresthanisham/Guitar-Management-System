@@ -1,34 +1,42 @@
 package controller;
 
+import java.util.ArrayList;
 import model.Guitar;
 import model.GuitarInventory;
 
 public class GuitarController {
 
-    private GuitarInventory inventory;
+    private final GuitarInventory inventory;
 
     public GuitarController(GuitarInventory inventory) {
         this.inventory = inventory;
     }
 
+    // ADD
     public boolean addGuitar(Guitar guitar) {
         return inventory.addGuitar(guitar);
     }
 
-    public boolean updateGuitar(Guitar guitar) {
-        return inventory.updateGuitar(guitar);
+    // UPDATE
+    public boolean updateGuitar(Guitar updatedGuitar) {
+        return inventory.updateGuitar(updatedGuitar);
     }
 
-    public boolean deleteGuitar(int id) {
-        return inventory.deleteGuitar(id);
+    // DELETE
+    public boolean deleteGuitar(int guitarId) {
+        return inventory.deleteGuitar(guitarId);
     }
 
-    public Guitar getGuitarById(int id) {
-        for (Guitar g : inventory.getAllGuitars()) {
-            if (g.getGuitarId() == id) {
-                return g;
-            }
-        }
-        return null;
+    // FIND BY ID (needed for update/delete)
+    public Guitar getGuitarById(int guitarId) {
+        return inventory.getGuitarById(guitarId);
+    }
+    public void clearAllGuitars() {
+    inventory.clearAllGuitars();
+}
+
+    // LIST ALL
+    public ArrayList<Guitar> getAllGuitars() {
+        return inventory.getAllGuitars();
     }
 }

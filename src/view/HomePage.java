@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
  * @author Dell
  */
 public class HomePage extends javax.swing.JFrame {
-    private GuitarInventory inventory;
     private DefaultTableModel tableModel;
     private GuitarController controller;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HomePage.class.getName());
@@ -23,14 +22,18 @@ public class HomePage extends javax.swing.JFrame {
      */
     public HomePage() {
         initComponents();
-        inventory = new GuitarInventory();
-        controller = new GuitarController(inventory);
+        controller = new GuitarController(new GuitarInventory());
         setupTable();
     }
     private void setupTable() {
     tableModel = new DefaultTableModel(
         new String[]{"Guitar ID", "Brand", "Type", "Price"}, 0
-    );
+    ) {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false; // prevent manual editing in JTable
+        }
+    };
     jTable1.setModel(tableModel);
 }
 
@@ -115,7 +118,7 @@ public class HomePage extends javax.swing.JFrame {
                 .addGap(0, 16, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("List", jPanel2);
+        jTabbedPane1.addTab("AdminDashboard", jPanel2);
 
         jPanel1.setBackground(new java.awt.Color(102, 255, 0));
 
@@ -396,25 +399,62 @@ public class HomePage extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-         int confirm = JOptionPane.showConfirmDialog(
+         int selectedRow = jTable1.getSelectedRow();
+
+    // 1️⃣ Check if any row is selected
+    if (selectedRow == -1) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Please select a row to delete.",
+                "No Selection",
+                JOptionPane.WARNING_MESSAGE
+        );
+        return;
+    }
+
+   
+    int confirm = JOptionPane.showConfirmDialog(
             this,
-            "Are you sure you want to delete ALL guitars?",
-            "Confirm Delete All",
-            JOptionPane.YES_NO_OPTION
+            "Are you sure you want to delete this guitar?",
+            "Confirm Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
     );
 
+    
     if (confirm != JOptionPane.YES_OPTION) {
         return;
     }
 
-    // 1) Clear data from Model (Inventory)
-    inventory.clearAllGuitars();
+    
+    int guitarId = Integer.parseInt(
+            tableModel.getValueAt(selectedRow, 0).toString()
+    );
 
-    // 2) Clear all rows from JTable (View)
-    tableModel.setRowCount(0);
+    
+    boolean deleted = controller.deleteGuitar(guitarId);
+    
 
-    JOptionPane.showMessageDialog(this, "All rows deleted successfully!");
-    clearFields();
+    if (!deleted) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Delete failed. Guitar not found.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE
+        );
+        return;
+    }
+
+    
+    tableModel.removeRow(selectedRow);
+
+  
+    JOptionPane.showMessageDialog(
+            this,
+            "Guitar deleted successfully!",
+            "Success",
+            JOptionPane.INFORMATION_MESSAGE
+    );
     }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
