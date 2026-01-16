@@ -126,6 +126,7 @@ public class HomePage extends javax.swing.JFrame {
         jButtonUndo = new javax.swing.JButton();
         jButtonSearch = new javax.swing.JButton();
         jTextFieldSearch = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
@@ -215,23 +216,27 @@ public class HomePage extends javax.swing.JFrame {
             }
         });
 
+        jLabel1.setText("Sort By Year:");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButtonSortAsc)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButtonSortDesc)
-                .addGap(82, 82, 82)
+                .addGap(191, 191, 191)
                 .addComponent(jButtonDelete)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(27, 27, 27)
                 .addComponent(jButtonUndo)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButtonSortDesc)
+                    .addComponent(jButtonSortAsc))
+                .addGap(32, 32, 32)
                 .addComponent(jButtonSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTextFieldSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -240,18 +245,26 @@ public class HomePage extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButtonSearch)
-                    .addComponent(jTextFieldSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonSortAsc)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonSortDesc)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jTextFieldSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButtonSearch))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonUndo)
-                    .addComponent(jButtonDelete)
-                    .addComponent(jButtonSortDesc)
-                    .addComponent(jButtonSortAsc))
+                    .addComponent(jButtonDelete))
                 .addContainerGap())
         );
 
@@ -671,40 +684,6 @@ public class HomePage extends javax.swing.JFrame {
     );
     }//GEN-LAST:event_jButtonDeleteActionPerformed
 
-    private void jButtonSortDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortDescActionPerformed
-     java.util.LinkedList<Guitar> sortedList =
-            controller.getSortedGuitarsByYear();
-
-    java.util.Collections.reverse(sortedList);
-
-    loadTableFromList(sortedList);
-
-    JOptionPane.showMessageDialog(
-            this,
-            "Sorted by Year (Descending)",
-            "Sort Complete",
-            JOptionPane.INFORMATION_MESSAGE
-    );
-    }//GEN-LAST:event_jButtonSortDescActionPerformed
-
-    private void jButtonSortAscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortAscActionPerformed
-    if (tableModel.getRowCount() == 0) {
-        JOptionPane.showMessageDialog(this, "No records to sort");
-        return;
-    }
-        java.util.List<Guitar> sortedList =
-            controller.getSortedGuitarsByYear();
-
-    loadTableFromList(sortedList);
-
-    JOptionPane.showMessageDialog(
-            this,
-            "Sorted by Year (Ascending)",
-            "Sort Complete",
-            JOptionPane.INFORMATION_MESSAGE
-    );        // TODO add your handling code here:
-    }//GEN-LAST:event_jButtonSortAscActionPerformed
-
     private void jButtonUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUndoActionPerformed
          Guitar restored = controller.undoLastDelete();
 
@@ -785,6 +764,40 @@ public class HomePage extends javax.swing.JFrame {
     }
     }//GEN-LAST:event_jButtonSearchActionPerformed
 
+    private void jButtonSortAscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortAscActionPerformed
+        if (tableModel.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "No records to sort");
+            return;
+        }
+        java.util.List<Guitar> sortedList =
+        controller.getSortedGuitarsByYear();
+
+        loadTableFromList(sortedList);
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Sorted by Year (Ascending)",
+            "Sort Complete",
+            JOptionPane.INFORMATION_MESSAGE
+        );        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonSortAscActionPerformed
+
+    private void jButtonSortDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortDescActionPerformed
+        java.util.LinkedList<Guitar> sortedList =
+        controller.getSortedGuitarsByYear();
+
+        java.util.Collections.reverse(sortedList);
+
+        loadTableFromList(sortedList);
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Sorted by Year (Descending)",
+            "Sort Complete",
+            JOptionPane.INFORMATION_MESSAGE
+        );
+    }//GEN-LAST:event_jButtonSortDescActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -826,6 +839,7 @@ private void clearFields() {
     private javax.swing.JButton jButtonSortDesc;
     private javax.swing.JButton jButtonUndo;
     private javax.swing.JButton jButtonUpdate;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
