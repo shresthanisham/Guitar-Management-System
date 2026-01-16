@@ -747,7 +747,7 @@ public class HomePage extends javax.swing.JFrame {
         return;
     }
 
-    // 🔹 Case 1: Numeric input → Binary Search (Year)
+    
     if (input.matches("\\d+")) {
         int year = Integer.parseInt(input);
 
@@ -765,7 +765,7 @@ public class HomePage extends javax.swing.JFrame {
                 + "\nPrice: " + found.getPrice()
         );
     }
-    // 🔹 Case 2: Text input → Linear Search (Brand / Type)
+    
     else {
         java.util.List<Guitar> results = controller.searchByKeyword(input);
 
