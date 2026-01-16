@@ -15,26 +15,95 @@ import javax.swing.JOptionPane;
 public class HomePage extends javax.swing.JFrame {
     private DefaultTableModel tableModel;
     private GuitarController controller;
+    private String role;
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(HomePage.class.getName());
 
     /**
      * Creates new form HomePage
      */
     public HomePage() {
-        initComponents();
-        controller = new GuitarController(new GuitarInventory());
-        setupTable();
+    this(new GuitarController(new GuitarInventory()), "ADMIN");
     }
+
+    public HomePage(GuitarController controller) {
+    this(controller, "ADMIN");
+    }
+
+    public HomePage(GuitarController controller, String role) {
+    initComponents();
+    this.controller = controller;
+    this.role = role;
+
+    setupTable();
+    seedInitialData();
+    loadTableFromInventory();
+
+    applyRoleAccess(); 
+    
+    if ("USER".equalsIgnoreCase(role)) {
+    int idx = jTabbedPane1.indexOfComponent(jPanel1); // Guitar details panel
+    if (idx != -1) {
+        jTabbedPane1.setSelectedIndex(idx);
+    }
+    }
+    }
+    private void loadTableFromList(java.util.List<Guitar> list) {
+    tableModel.setRowCount(0);
+
+    for (Guitar g : list) {
+        tableModel.addRow(new Object[]{
+            g.getGuitarId(),
+            g.getBrand(),
+            g.getType(),
+            g.getYear(),
+            g.getPrice()
+        });
+    }
+}
+    private void applyRoleAccess() {
+    boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
+    // Admin-only actions
+    jButtonAdd.setEnabled(isAdmin);
+    jButtonUpdate.setEnabled(isAdmin);
+    jButtonDelete.setEnabled(isAdmin);
+    jButtonUndo.setEnabled(isAdmin);
+
+    // Everyone can sort
+    jButtonSortAsc.setEnabled(true);
+    jButtonSortDesc.setEnabled(true);
+
+    // Input fields: admin can type, user can't
+    jTextField1.setEnabled(isAdmin);
+    jTextField5.setEnabled(isAdmin);
+    jTextField6.setEnabled(isAdmin);
+    jTextField2.setEnabled(isAdmin);
+    jTextField4.setEnabled(isAdmin);
+
+    // Optional: if user, force them to Browse tab first
+    if (!isAdmin) {
+        int idx = jTabbedPane1.indexOfComponent(jPanel2); // your table tab
+        if (idx != -1) jTabbedPane1.setSelectedIndex(idx);
+    }
+}
+
+
+
+
+
     private void setupTable() {
     tableModel = new DefaultTableModel(
-        new String[]{"Guitar ID", "Brand", "Type", "Price"}, 0
+        new String[]{"Guitar ID", "Brand", "Type", "Year", "Price"}, 0
     ) {
         @Override
         public boolean isCellEditable(int row, int column) {
-            return false; // prevent manual editing in JTable
+            return false; 
         }
     };
     jTable1.setModel(tableModel);
+    jTable1.getTableHeader().setReorderingAllowed(false);
+
 }
 
     /**
@@ -51,7 +120,12 @@ public class HomePage extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
-        jButton3 = new javax.swing.JButton();
+        jButtonDelete = new javax.swing.JButton();
+        jButtonSortAsc = new javax.swing.JButton();
+        jButtonSortDesc = new javax.swing.JButton();
+        jButtonUndo = new javax.swing.JButton();
+        jButtonSearch = new javax.swing.JButton();
+        jTextFieldSearch = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
@@ -61,41 +135,83 @@ public class HomePage extends javax.swing.JFrame {
         jTextField5 = new javax.swing.JTextField();
         jTextField6 = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        jButtonAdd = new javax.swing.JButton();
+        jButtonUpdate = new javax.swing.JButton();
+        jTextField2 = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.CardLayout());
 
-        jPanel4.setBackground(new java.awt.Color(0, 0, 0));
+        jPanel4.setBackground(new java.awt.Color(0, 255, 204));
 
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
+        jTable1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Guitar ID", "Guitar Brand", "GuitarType", "Price"
+                "Guitar ID", "Guitar Brand", "GuitarType", "Year", "Price"
             }
         ));
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
-        jButton3.setText("Delete");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        jButtonDelete.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
+        jButtonDelete.setText("Delete");
+        jButtonDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                jButtonDeleteActionPerformed(evt);
+            }
+        });
+
+        jButtonSortAsc.setText("Sort ASC");
+        jButtonSortAsc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSortAscActionPerformed(evt);
+            }
+        });
+
+        jButtonSortDesc.setText("Sort DESC");
+        jButtonSortDesc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSortDescActionPerformed(evt);
+            }
+        });
+
+        jButtonUndo.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
+        jButtonUndo.setText("Undo");
+        jButtonUndo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonUndoActionPerformed(evt);
+            }
+        });
+
+        jButtonSearch.setText("Search");
+        jButtonSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonSearchActionPerformed(evt);
             }
         });
 
@@ -103,25 +219,47 @@ public class HomePage extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 581, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jButtonSortAsc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonSortDesc)
+                .addGap(82, 82, 82)
+                .addComponent(jButtonDelete)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButtonUndo)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton3)
-                .addGap(253, 253, 253))
+                .addComponent(jButtonSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTextFieldSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonSearch)
+                    .addComponent(jTextFieldSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3)
-                .addGap(0, 16, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 292, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonUndo)
+                    .addComponent(jButtonDelete)
+                    .addComponent(jButtonSortDesc)
+                    .addComponent(jButtonSortAsc))
+                .addContainerGap())
         );
 
-        jTabbedPane1.addTab("AdminDashboard", jPanel2);
+        jTabbedPane1.addTab("Browse Guitars", jPanel2);
 
         jPanel1.setBackground(new java.awt.Color(102, 255, 0));
 
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel2.setText("Guitar ID:");
 
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
@@ -130,6 +268,7 @@ public class HomePage extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel3.setText("Guitar Brand:");
 
         jTextField4.addActionListener(new java.awt.event.ActionListener() {
@@ -138,6 +277,7 @@ public class HomePage extends javax.swing.JFrame {
             }
         });
 
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel5.setText("GuitarType:");
 
         jTextField5.addActionListener(new java.awt.event.ActionListener() {
@@ -152,104 +292,146 @@ public class HomePage extends javax.swing.JFrame {
             }
         });
 
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel7.setText("Price:");
 
-        jButton1.setText("Add");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        jButtonAdd.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
+        jButtonAdd.setText("Add");
+        jButtonAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                jButtonAddActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Update");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        jButtonUpdate.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
+        jButtonUpdate.setText("Update");
+        jButtonUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                jButtonUpdateActionPerformed(evt);
             }
         });
+
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel10.setText("Year:");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(176, 176, 176)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(176, 176, 176)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel7)
+                                    .addComponent(jLabel2))
+                                .addGap(13, 13, 13))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jTextField5, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
                             .addComponent(jTextField6, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
                             .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
-                            .addComponent(jTextField1)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(56, 56, 56)
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2)))
-                .addContainerGap(193, Short.MAX_VALUE))
+                            .addComponent(jTextField2)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButtonAdd)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButtonUpdate)))
+                .addContainerGap(197, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(86, 86, 86)
+                .addGap(61, 61, 61)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(14, 14, 14)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jLabel3)
+                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel10))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
-                .addGap(38, 38, 38)
+                    .addComponent(jLabel7)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton1))
-                .addContainerGap(67, Short.MAX_VALUE))
+                    .addComponent(jButtonAdd)
+                    .addComponent(jButtonUpdate))
+                .addContainerGap(132, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Guitar details", jPanel1);
 
-        jButton4.setText("Dashboard");
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        jButton5.setText("Guitar Details");
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
+        jLabel4.setText("Welcome");
 
-        jButton6.setText("User Details");
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
+        jLabel6.setText("To");
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
+        jLabel8.setText("Guitar Hero");
+
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 3, 24)); // NOI18N
+        jLabel9.setText("Shop");
+
+        jLabel11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view/guitar.png"))); // NOI18N
+        jLabel11.setText("jLabel11");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(30, Short.MAX_VALUE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel8)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel4)))
+                .addGap(54, 54, 54))
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(52, 52, 52)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton4)
-                    .addComponent(jButton5)
-                    .addComponent(jButton6))
-                .addContainerGap(81, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(83, 83, 83)
+                        .addComponent(jLabel6))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(69, 69, 69)
+                        .addComponent(jLabel9)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(42, 42, 42)
-                .addComponent(jButton4)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel11)
                 .addGap(18, 18, 18)
-                .addComponent(jButton5)
+                .addComponent(jLabel4)
                 .addGap(18, 18, 18)
-                .addComponent(jButton6)
-                .addContainerGap(197, Short.MAX_VALUE))
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel8)
+                .addGap(12, 12, 12)
+                .addComponent(jLabel9)
+                .addGap(100, 100, 100))
         );
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
@@ -257,20 +439,19 @@ public class HomePage extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(14, 14, 14)
+                .addContainerGap()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 581, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTabbedPane1))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 372, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         getContentPane().add(jPanel4, "card2");
@@ -294,11 +475,12 @@ public class HomePage extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField6ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
          try {
         int guitarId = Integer.parseInt(jTextField1.getText().trim());
         String brand = jTextField5.getText().trim();
         String type = jTextField6.getText().trim();
+        int year = Integer.parseInt(jTextField2.getText().trim());
         double price = Double.parseDouble(jTextField4.getText().trim());
 
         if (brand.isEmpty() || type.isEmpty()) {
@@ -308,16 +490,13 @@ public class HomePage extends javax.swing.JFrame {
 
         Guitar guitar = new Guitar(
                 guitarId,
-                "Model",
                 brand,
                 type,
-                2024,
-                "New",
-                price,
-                1
+                year,
+                price       
         );
 
-        // ✅ MVC: View → Controller
+        // MVC: View → Controller
         boolean added = controller.addGuitar(guitar);
 
         if (!added) {
@@ -330,6 +509,7 @@ public class HomePage extends javax.swing.JFrame {
                 guitarId,
                 brand,
                 type,
+                year,
                 price
         });
 
@@ -337,11 +517,41 @@ public class HomePage extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, "Guitar added successfully");
 
     } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Invalid ID or Price");
-    } 
-    }//GEN-LAST:event_jButton1ActionPerformed
+        JOptionPane.showMessageDialog(this, "Invalid number format for ID / Year / Price");
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    } 
+    }//GEN-LAST:event_jButtonAddActionPerformed
+    private void seedInitialData() {
+
+    if (!controller.getAllGuitars().isEmpty()) {
+        return;
+    }
+
+    controller.addGuitar(new Guitar(1, "Fender", "Electric", 2018, 850));
+    controller.addGuitar(new Guitar(2, "Gibson", "Electric", 2020, 2200));
+    controller.addGuitar(new Guitar(3, "Ibanez", "Electric", 2016, 700));
+    controller.addGuitar(new Guitar(4, "Martin", "Acoustic", 2019, 3000));
+    controller.addGuitar(new Guitar(5, "Ibanez", "Bass", 2017, 650));
+}
+
+
+
+       private void loadTableFromInventory() {
+        // Clear existing rows first
+        tableModel.setRowCount(0);
+
+        // Load all guitars from inventory into JTable
+        for (Guitar g : controller.getAllGuitars()) {
+        tableModel.addRow(new Object[]{
+            g.getGuitarId(),
+            g.getBrand(),
+            g.getType(),
+            g.getYear(),
+            g.getPrice()
+        });
+    }
+}
+    private void jButtonUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUpdateActionPerformed
         try {
         int guitarId = Integer.parseInt(jTextField1.getText().trim());
 
@@ -358,21 +568,24 @@ public class HomePage extends javax.swing.JFrame {
         String type = jTextField6.getText().trim().isEmpty()
                 ? oldGuitar.getType()
                 : jTextField6.getText().trim();
-
+        
+        int year = jTextField2.getText().trim().isEmpty()
+        ? oldGuitar.getYear()
+        : Integer.parseInt(jTextField2.getText().trim());
+        
         double price = jTextField4.getText().trim().isEmpty()
                 ? oldGuitar.getPrice()
                 : Double.parseDouble(jTextField4.getText().trim());
 
-        Guitar updatedGuitar = new Guitar(
+            Guitar updatedGuitar = new Guitar(
                 guitarId,
-                oldGuitar.getModelName(),
                 brand,
                 type,
-                oldGuitar.getYear(),
-                oldGuitar.getCondition(),
-                price,
-                oldGuitar.getStockQty()
-        );
+                year,
+                price
+            );
+
+
 
         boolean updated = controller.updateGuitar(updatedGuitar);
         if (!updated) {
@@ -385,7 +598,8 @@ public class HomePage extends javax.swing.JFrame {
             if ((int) tableModel.getValueAt(i, 0) == guitarId) {
                 tableModel.setValueAt(brand, i, 1);
                 tableModel.setValueAt(type, i, 2);
-                tableModel.setValueAt(price, i, 3);
+                tableModel.setValueAt(year, i, 3);
+                tableModel.setValueAt(price, i, 4);
                 break;
             }
         }
@@ -396,9 +610,9 @@ public class HomePage extends javax.swing.JFrame {
     } catch (NumberFormatException e) {
         JOptionPane.showMessageDialog(this, "Invalid ID or Price");
     }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_jButtonUpdateActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void jButtonDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDeleteActionPerformed
          int selectedRow = jTable1.getSelectedRow();
 
     // 1️⃣ Check if any row is selected
@@ -455,7 +669,98 @@ public class HomePage extends javax.swing.JFrame {
             "Success",
             JOptionPane.INFORMATION_MESSAGE
     );
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_jButtonDeleteActionPerformed
+
+    private void jButtonSortDescActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortDescActionPerformed
+     java.util.LinkedList<Guitar> sortedList =
+            controller.getSortedGuitarsByYear();
+
+    java.util.Collections.reverse(sortedList);
+
+    loadTableFromList(sortedList);
+
+    JOptionPane.showMessageDialog(
+            this,
+            "Sorted by Year (Descending)",
+            "Sort Complete",
+            JOptionPane.INFORMATION_MESSAGE
+    );
+    }//GEN-LAST:event_jButtonSortDescActionPerformed
+
+    private void jButtonSortAscActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSortAscActionPerformed
+    if (tableModel.getRowCount() == 0) {
+        JOptionPane.showMessageDialog(this, "No records to sort");
+        return;
+    }
+        java.util.List<Guitar> sortedList =
+            controller.getSortedGuitarsByYear();
+
+    loadTableFromList(sortedList);
+
+    JOptionPane.showMessageDialog(
+            this,
+            "Sorted by Year (Ascending)",
+            "Sort Complete",
+            JOptionPane.INFORMATION_MESSAGE
+    );        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonSortAscActionPerformed
+
+    private void jButtonUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUndoActionPerformed
+         Guitar restored = controller.undoLastDelete();
+
+    if (restored == null) {
+        JOptionPane.showMessageDialog(
+                this,
+                "Nothing to undo",
+                "Undo",
+                JOptionPane.INFORMATION_MESSAGE
+        );
+        return;
+    }
+
+    loadTableFromInventory();
+
+    JOptionPane.showMessageDialog(
+            this,
+            "Undo successful! Restored Guitar ID: " + restored.getGuitarId(),
+            "Undo Complete",
+            JOptionPane.INFORMATION_MESSAGE
+    );
+    }//GEN-LAST:event_jButtonUndoActionPerformed
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+         int row = jTable1.getSelectedRow();
+    if (row == -1) return;
+
+    jTextField1.setText(tableModel.getValueAt(row, 0).toString()); // ID
+    jTextField5.setText(tableModel.getValueAt(row, 1).toString()); // Brand
+    jTextField6.setText(tableModel.getValueAt(row, 2).toString()); // Type
+    jTextField2.setText(tableModel.getValueAt(row, 3).toString()); // Year
+    jTextField4.setText(tableModel.getValueAt(row, 4).toString()); // Price
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButtonSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSearchActionPerformed
+        try {
+        int year = Integer.parseInt(jTextFieldSearch.getText().trim());
+
+        Guitar found = controller.binarySearchByYear(year);
+
+        if (found == null) {
+            JOptionPane.showMessageDialog(this, "No guitar found for year: " + year);
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this,
+                "Found: ID=" + found.getGuitarId()
+                + ", Brand=" + found.getBrand()
+                + ", Type=" + found.getType()
+                + ", Price=" + found.getPrice()
+        );
+
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(this, "Enter a valid year!");
+    }
+    }//GEN-LAST:event_jButtonSearchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -479,26 +784,35 @@ public class HomePage extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new HomePage().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new LoginPage().setVisible(true));
     }
 private void clearFields() {
     jTextField1.setText("");
     jTextField5.setText("");
     jTextField6.setText("");
+    jTextField2.setText("");
     jTextField4.setText("");
+
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
+    private javax.swing.JButton jButtonAdd;
+    private javax.swing.JButton jButtonDelete;
+    private javax.swing.JButton jButtonSearch;
+    private javax.swing.JButton jButtonSortAsc;
+    private javax.swing.JButton jButtonSortDesc;
+    private javax.swing.JButton jButtonUndo;
+    private javax.swing.JButton jButtonUpdate;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -507,8 +821,10 @@ private void clearFields() {
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
     private javax.swing.JTextField jTextField4;
     private javax.swing.JTextField jTextField5;
     private javax.swing.JTextField jTextField6;
+    private javax.swing.JTextField jTextFieldSearch;
     // End of variables declaration//GEN-END:variables
 }
