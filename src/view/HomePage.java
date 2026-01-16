@@ -740,8 +740,16 @@ public class HomePage extends javax.swing.JFrame {
     }//GEN-LAST:event_jTable1MouseClicked
 
     private void jButtonSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSearchActionPerformed
-        try {
-        int year = Integer.parseInt(jTextFieldSearch.getText().trim());
+        String input = jTextFieldSearch.getText().trim();
+
+    if (input.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "Please enter Brand, Type, or Year");
+        return;
+    }
+
+    // 🔹 Case 1: Numeric input → Binary Search (Year)
+    if (input.matches("\\d+")) {
+        int year = Integer.parseInt(input);
 
         Guitar found = controller.binarySearchByYear(year);
 
@@ -751,14 +759,29 @@ public class HomePage extends javax.swing.JFrame {
         }
 
         JOptionPane.showMessageDialog(this,
-                "Found: ID=" + found.getGuitarId()
-                + ", Brand=" + found.getBrand()
-                + ", Type=" + found.getType()
-                + ", Price=" + found.getPrice()
+                "Found:\nID: " + found.getGuitarId()
+                + "\nBrand: " + found.getBrand()
+                + "\nType: " + found.getType()
+                + "\nPrice: " + found.getPrice()
         );
+    }
+    // 🔹 Case 2: Text input → Linear Search (Brand / Type)
+    else {
+        java.util.List<Guitar> results = controller.searchByKeyword(input);
 
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Enter a valid year!");
+        if (results.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No guitars found for: " + input);
+            return;
+        }
+
+        loadTableFromList(results);
+
+        JOptionPane.showMessageDialog(
+                this,
+                results.size() + " result(s) found for: " + input,
+                "Search Complete",
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
     }//GEN-LAST:event_jButtonSearchActionPerformed
 
