@@ -7,7 +7,7 @@ import javax.swing.JOptionPane;
 import controller.GuitarController;
 import model.GuitarInventory;
 /**
- *
+ * Login Page
  * @author Nisham
  */
 public class LoginPage extends javax.swing.JFrame {
