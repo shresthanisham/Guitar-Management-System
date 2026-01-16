@@ -42,7 +42,7 @@ public class HomePage extends javax.swing.JFrame {
     applyRoleAccess(); 
     
     if ("USER".equalsIgnoreCase(role)) {
-    int idx = jTabbedPane1.indexOfComponent(jPanel1); // Guitar details panel
+    int idx = jTabbedPane1.indexOfComponent(jPanel2); // Browse Guitars panel
     if (idx != -1) {
         jTabbedPane1.setSelectedIndex(idx);
     }
