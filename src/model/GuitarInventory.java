@@ -15,7 +15,7 @@ import java.util.Queue;
  * @author Dell
  */
 public class GuitarInventory {
-
+   
     private final ArrayList<Guitar> guitarList;
     private final Stack<Guitar> deletedStack;
     private final Queue<Guitar> recentlyAddedQueue;

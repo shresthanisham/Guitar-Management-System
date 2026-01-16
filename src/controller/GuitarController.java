@@ -19,7 +19,11 @@ public class GuitarController {
     public boolean addGuitar(Guitar guitar) {
         return inventory.addGuitar(guitar);
     }
-
+    
+    public Guitar getGuitarById(int id) {
+        return inventory.getGuitarById(id);
+    }
+    
     public boolean updateGuitar(Guitar guitar) {
         return inventory.updateGuitar(guitar);
     }
@@ -32,9 +36,7 @@ public class GuitarController {
         return inventory.getAllGuitars();
     }
 
-    public Guitar getGuitarById(int id) {
-        return inventory.getGuitarById(id);
-    }
+    
 
     public void clearAllGuitars() {
         inventory.clearAllGuitars();
@@ -47,7 +49,7 @@ public class GuitarController {
     public Queue<Guitar> getRecentlyAddedGuitars() {
         return inventory.getRecentlyAddedGuitars();
     }
-
+    
     // Searching
     public List<Guitar> searchByKeyword(String keyword) {
         return inventory.searchByKeyword(keyword);
